@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MealMate</title>
+  <script defer src="script.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center px-4 py-6 sm:px-6 lg:px-8">
+  <h1 class="text-4xl font-bold text-green-600 mb-2">Jason & Justin's MealMate 🍱</h1>
+  <p class="mb-4 text-gray-700">Enter the ingredients you have, and we'll find recipes for you!</p>
+
+  <div class="w-full max-w-xl">
+    <input list="suggestions" id="ingredientInput" type="text" placeholder="e.g. egg, rice, tomato" 
+           class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none">
+    <datalist id="suggestions">
+      <option value="egg">
+      <option value="rice">
+      <option value="tomato">
+      <option value="cheese">
+      <option value="onion">
+      <option value="spinach">
+      <option value="chicken">
+      <option value="bread">
+    </datalist>
+
+    <button id="findButton" 
+            class="mt-3 w-full bg-green-500 hover:bg-green-600 text-white p-3 rounded-md font-semibold">
+      Find Recipes
+    </button>
+  </div>
+
+  <div id="searchHistory" class="mt-4 w-full max-w-md text-sm text-gray-600">
+    <span class="font-semibold">Recent Searches:</span>
+    <div id="historyList" class="flex flex-wrap gap-2 mt-1"></div>
+    <button id="clearHistory" class="text-red-500 mt-1 text-xs underline">Clear History</button>
+  </div>
+
+  <div id="results" class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-7xl">
+    <!-- Recipe cards will go here -->
+  </div>
+
+  <div class="w-full max-w-5xl mt-10">
+    <h2 class="text-xl font-semibold text-green-700 mb-2">Your Favorites ❤️</h2>
+    <div id="favorites" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+      <!-- Favorite recipes go here -->
+    </div>
+  </div>
+
+  <footer class="mt-10 text-sm text-gray-400">Built with ❤️ by Team MealMate</footer>
+</body>
+</html>
