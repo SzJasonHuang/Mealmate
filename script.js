@@ -5,7 +5,12 @@ const favorites = document.getElementById("favorites");
 const historyList = document.getElementById("historyList");
 const clearHistory = document.getElementById("clearHistory");
 
-const API_KEY = "6c2b54517ee8420eb92d6cdaff79153b"; // Replace with your API key
+
+const API_KEY = "6c2b54517ee8420eb92d6cdaff79153b"; 
+let currentQuery = "";
+let currentCount = 0;
+const INCREMENT = 10;
+const MAX_DISPLAYED = 50; 
 
 // Load saved favorites and history on startup
 window.onload = () => {
@@ -32,18 +37,30 @@ clearHistory.addEventListener("click", () => {
   historyList.innerHTML = "";
 });
 
-function fetchRecipes(ingredients) {
-  results.innerHTML = "<p class='text-gray-600 col-span-full'>Loading recipes...</p>";
+function fetchRecipes(ingredients, append = false) {
+  if(!append){
+    currentQuery = ingredients;
+    currentCount = INCREMENT;
+    results.innerHTML = "<p class='text-gray-600 col-span-full'>Loading recipes...</p>";
+  }
+  else{ 
+    currentCount += INCREMENT;
+  }
+ 
 
-  fetch(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${ingredients}&number=20&apiKey=${API_KEY}`)
+  fetch(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${ingredients}&number=${MAX_DISPLAYED}&apiKey=${API_KEY}`)
     .then(res => res.json())
     .then(data => {
-      results.innerHTML = "";
+      if(!append) {
+        result.innerHTML = ""; 
+      }
       if (data.length === 0) {
         results.innerHTML = "<p class='text-red-500 col-span-full'>No recipes found.</p>";
         return;
       }
-      data.forEach(recipe => renderCard(recipe, results, true));
+
+     const displayed = document.querySelectorAll("#results .bg-white").length;
+      data.slice(displayed).forEach(recipe => renderCard(recipe, results, true));
     })
     .catch(err => {
       console.error(err);
@@ -135,4 +152,13 @@ function deleteFavorite(id) {
   localStorage.setItem("mealMateFavorites", JSON.stringify(saved));
   loadFavorites();
 }
+
+window.addEventListner("scroll",() => {
+  if(
+    window.innerHeight + window.scrollY >= document.body.offsetHeight - 200 && 
+    currentQuery && currentCount < MAX_DISPLAYED
+  ){
+    fetchRecipes(currentQuery, true);
+  }
+});
 
