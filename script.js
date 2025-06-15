@@ -20,6 +20,13 @@ findButton.addEventListener("click", () => {
   fetchRecipes(ingredients);
 });
 
+input.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    findButton.click();
+  }
+});
+
 clearHistory.addEventListener("click", () => {
   localStorage.removeItem("mealMateHistory");
   historyList.innerHTML = "";
