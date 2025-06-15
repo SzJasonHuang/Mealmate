@@ -52,7 +52,7 @@ function fetchRecipes(ingredients, append = false) {
     .then(res => res.json())
     .then(data => {
       if(!append) {
-        result.innerHTML = ""; 
+        results.innerHTML = ""; 
       }
       if (data.length === 0) {
         results.innerHTML = "<p class='text-red-500 col-span-full'>No recipes found.</p>";
@@ -153,7 +153,7 @@ function deleteFavorite(id) {
   loadFavorites();
 }
 
-window.addEventListner("scroll",() => {
+window.addEventListener("scroll", () => {
   if(
     window.innerHeight + window.scrollY >= document.body.offsetHeight - 200 && 
     currentQuery && currentCount < MAX_DISPLAYED
