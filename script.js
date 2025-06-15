@@ -35,7 +35,7 @@ clearHistory.addEventListener("click", () => {
 function fetchRecipes(ingredients) {
   results.innerHTML = "<p class='text-gray-600 col-span-full'>Loading recipes...</p>";
 
-  fetch(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${ingredients}&number=6&apiKey=${API_KEY}`)
+  fetch(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${ingredients}&number=20&apiKey=${API_KEY}`)
     .then(res => res.json())
     .then(data => {
       results.innerHTML = "";
