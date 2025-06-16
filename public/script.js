@@ -45,6 +45,7 @@ const MAX_DISPLAYED = 50;
 
 // Add these constants at the top with your other constants
 const suggestionsList = document.getElementById('suggestionsList');
+const searchError = document.getElementById('searchError');
 
 // Initialize app with all event listeners
 window.onload = () => {
@@ -93,7 +94,7 @@ function initializeButtons() {
     });
     
     // Enter key functionality for search
-    input.addEventListener('keypress', (e) => {
+    input.addEventListener("keypress", (e) => {
         if (e.key === 'Enter') {
             const ingredients = input.value.trim();
             if (ingredients) {
@@ -298,7 +299,12 @@ async function migrateFavoritesToServer() {
 // Recipe functions
 findButton.addEventListener("click", () => {
   const ingredients = input.value.trim();
-  if (!ingredients) return alert("Please enter ingredients.");
+  if (!ingredients) {
+    searchError.textContent = "Please enter ingredients first";
+    searchError.classList.remove('hidden');
+    return;
+  }
+  searchError.classList.add('hidden');
   addToHistory(ingredients);
   fetchRecipes(ingredients);
 });
@@ -306,7 +312,15 @@ findButton.addEventListener("click", () => {
 input.addEventListener("keydown", e => {
   if (e.key === "Enter") {
     e.preventDefault();
-    findButton.click();
+    const ingredients = input.value.trim();
+    if (!ingredients) {
+      searchError.textContent = "Please enter ingredients first";
+      searchError.classList.remove('hidden');
+      return;
+    }
+    searchError.classList.add('hidden');
+    addToHistory(ingredients);
+    fetchRecipes(ingredients);
   }
 });
 
@@ -365,16 +379,18 @@ function fetchRecipes(ingredients, append = false) {
         .then(data => {
             hideLoadingSpinner();
             if (data.length === 0) {
-                showToast('No recipes found. Try different ingredients!', 'error');
+                searchError.textContent = "No recipes found with these ingredients";
+                searchError.classList.remove('hidden');
                 return;
             }
-
+            searchError.classList.add('hidden');
             const displayed = document.querySelectorAll("#results .recipe-card").length;
             data.slice(displayed).forEach(recipe => renderCard(recipe, results, true));
         })
         .catch(err => {
             hideLoadingSpinner();
-            showToast('Error fetching recipes. Please try again.', 'error');
+            searchError.textContent = "Error fetching recipes. Please try again.";
+            searchError.classList.remove('hidden');
             console.error('Recipe fetch error:', err);
         });
 }
