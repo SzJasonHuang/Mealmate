@@ -274,59 +274,76 @@ clearHistory.addEventListener("click", async () => {
   historyList.innerHTML = "";
 });
 
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    document.getElementById('toastContainer').appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+function showLoadingSpinner() {
+    document.getElementById('loadingSpinner').classList.remove('hidden');
+}
+
+function hideLoadingSpinner() {
+    document.getElementById('loadingSpinner').classList.add('hidden');
+}
+
 function fetchRecipes(ingredients, append = false) {
-  if (!append) {
-    currentQuery = ingredients;
-    currentCount = INCREMENT;
-    results.innerHTML = "<p class='text-gray-600 col-span-full'>Loading recipes...</p>";
-  } else {
-    currentCount += INCREMENT;
-  }
-
-  fetch(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${encodeURIComponent(ingredients)}&number=${MAX_DISPLAYED}&apiKey=${SPOONACULAR_API_KEY}`)
-    .then(res => {
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      return res.json();
-    })
-    .then(data => {
-      if (!append) {
+    if (!append) {
+        currentQuery = ingredients;
+        currentCount = INCREMENT;
         results.innerHTML = "";
-      }
-      if (data.length === 0) {
-        results.innerHTML = "<p class='text-red-500 col-span-full'>No recipes found. Try different ingredients!</p>";
-        return;
-      }
+        showLoadingSpinner();
+    }
 
-      const displayed = document.querySelectorAll("#results .bg-white").length;
-      data.slice(displayed).forEach(recipe => renderCard(recipe, results, true));
-    })
-    .catch(err => {
-      console.error('Recipe fetch error:', err);
-      results.innerHTML = "<p class='text-red-500 col-span-full'>Error fetching recipes. Please try again.</p>";
-    });
+    fetch(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${encodeURIComponent(ingredients)}&number=${MAX_DISPLAYED}&apiKey=${SPOONACULAR_API_KEY}`)
+        .then(res => {
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            return res.json();
+        })
+        .then(data => {
+            hideLoadingSpinner();
+            if (data.length === 0) {
+                showToast('No recipes found. Try different ingredients!', 'error');
+                return;
+            }
+
+            const displayed = document.querySelectorAll("#results .recipe-card").length;
+            data.slice(displayed).forEach(recipe => renderCard(recipe, results, true));
+        })
+        .catch(err => {
+            hideLoadingSpinner();
+            showToast('Error fetching recipes. Please try again.', 'error');
+            console.error('Recipe fetch error:', err);
+        });
 }
 
 function renderCard(recipe, container, showFavBtn = false) {
-  const card = document.createElement("div");
-  card.className = "bg-white rounded-lg shadow-md p-4 flex flex-col items-center text-center hover:shadow-lg transition-shadow";
+    const card = document.createElement("div");
+    card.className = "recipe-card bg-white rounded-lg shadow-md p-4 flex flex-col items-center text-center";
 
-  const favBtn = showFavBtn && currentUser
-    ? `<button class="mt-2 text-red-500 hover:text-red-700 text-sm add-fav-btn transition-colors" data-recipe='${JSON.stringify(recipe)}'>❤️ Add to Favorites</button>`
-    : showFavBtn
-    ? `<button class="mt-2 text-gray-400 text-sm cursor-not-allowed" disabled>❤️ Login to Save</button>`
-    : `<button class="mt-2 text-gray-500 hover:text-gray-700 text-sm remove-fav-btn transition-colors" data-id="${recipe.recipe_id || recipe.id}">🗑 Remove</button>`;
+    const favBtn = showFavBtn && currentUser
+      ? `<button class="mt-2 text-red-500 hover:text-red-700 text-sm add-fav-btn transition-colors" data-recipe='${JSON.stringify(recipe)}'>❤️ Add to Favorites</button>`
+      : showFavBtn
+      ? `<button class="mt-2 text-gray-400 text-sm cursor-not-allowed" disabled>❤️ Login to Save</button>`
+      : `<button class="mt-2 text-gray-500 hover:text-gray-700 text-sm remove-fav-btn transition-colors" data-id="${recipe.recipe_id || recipe.id}">🗑 Remove</button>`;
 
-  card.innerHTML = `
-    <img src="${recipe.image}" alt="${recipe.title || recipe.recipe_title}" class="w-full h-40 object-cover rounded mb-2" loading="lazy">
-    <h2 class="text-lg font-semibold mb-2">${recipe.title || recipe.recipe_title}</h2>
-    <a href="https://spoonacular.com/recipes/${(recipe.title || recipe.recipe_title).toLowerCase().replace(/ /g, "-")}-${recipe.id || recipe.recipe_id}" 
-       target="_blank" class="text-green-600 mt-2 underline hover:text-green-800 transition-colors">View Recipe</a>
-    ${favBtn}
-  `;
+    card.innerHTML = `
+      <img src="${recipe.image}" alt="${recipe.title || recipe.recipe_title}" class="w-full h-40 object-cover rounded mb-2" loading="lazy">
+      <h2 class="text-lg font-semibold mb-2">${recipe.title || recipe.recipe_title}</h2>
+      <a href="https://spoonacular.com/recipes/${(recipe.title || recipe.recipe_title).toLowerCase().replace(/ /g, "-")}-${recipe.id || recipe.recipe_id}" 
+         target="_blank" class="text-green-600 mt-2 underline hover:text-green-800 transition-colors">View Recipe</a>
+      ${favBtn}
+    `;
 
-  container.appendChild(card);
+    container.appendChild(card);
 }
 
 async function saveFavorite(recipe) {
