@@ -13,13 +13,13 @@ const connectDB = async () => {
       ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
     });
 
-    console.log('✅ Connected to MySQL database');
+    console.log(' Connected to MySQL database');
     
     // Create tables if they don't exist
     await createTables();
     
   } catch (error) {
-    console.error('❌ Database connection failed:', error.message);
+    console.error('Database connection failed:', error.message);
     process.exit(1);
   }
 };
@@ -76,9 +76,9 @@ const createTables = async () => {
     await connection.execute(createFavoritesTable);
     await connection.execute(createSearchHistoryTable);
     
-    console.log('✅ Database tables created/verified');
+    console.log(' Database tables created/verified');
   } catch (error) {
-    console.error('❌ Error creating tables:', error.message);
+    console.error(' Error creating tables:', error.message);
     throw error;
   }
 };
