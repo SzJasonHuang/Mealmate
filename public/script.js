@@ -28,9 +28,9 @@ const loginPromptBtn = document.getElementById("loginPromptBtn");
 // API Configuration - Updated to handle both local and production
 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
   ? 'http://localhost:3000/api' 
-  : 'https://your-backend-url.com/api'; // Replace with your actual backend URL when deployed
+  : '/api'; // Replace with your actual backend URL when deployed
 
-const SPOONACULAR_API_KEY = "6c2b54517ee8420eb92d6cdaff79153b"; 
+const SPOONACULAR_API_KEY = "f862488724a4402887ae62651640d9d0"; 
 
 // State management
 let currentUser = null;

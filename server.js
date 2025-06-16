@@ -17,7 +17,8 @@ connectDB();
 
 // Security middleware
 app.use(helmet({
-  crossOriginEmbedderPolicy: false,
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false
 }));
 
 // CORS configuration
