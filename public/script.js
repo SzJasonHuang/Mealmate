@@ -330,10 +330,10 @@ function renderCard(recipe, container, showFavBtn = false) {
     card.className = "recipe-card bg-white rounded-lg shadow-md p-4 flex flex-col items-center text-center";
 
     const favBtn = showFavBtn && currentUser
-      ? `<button class="mt-2 text-red-500 hover:text-red-700 text-sm add-fav-btn transition-colors" data-recipe='${JSON.stringify(recipe)}'>❤️ Add to Favorites</button>`
+      ? `<button class="btn-expand mt-2 text-red-500 hover:text-red-700 text-sm add-fav-btn transition-colors" data-recipe='${JSON.stringify(recipe)}'>❤️ Add to Favorites</button>`
       : showFavBtn
       ? `<button class="mt-2 text-gray-400 text-sm cursor-not-allowed" disabled>❤️ Login to Save</button>`
-      : `<button class="mt-2 text-gray-500 hover:text-gray-700 text-sm remove-fav-btn transition-colors" data-id="${recipe.recipe_id || recipe.id}">🗑 Remove</button>`;
+      : `<button class="btn-expand mt-2 text-gray-500 hover:text-gray-700 text-sm remove-fav-btn transition-colors" data-id="${recipe.recipe_id || recipe.id}">🗑 Remove</button>`;
 
     card.innerHTML = `
       <img src="${recipe.image}" alt="${recipe.title || recipe.recipe_title}" class="w-full h-40 object-cover rounded mb-2" loading="lazy">
@@ -470,15 +470,15 @@ async function loadHistory() {
   }
 
   history.slice(0, 10).forEach(item => {
-    const tag = document.createElement("button");
-    tag.className = "bg-gray-200 px-2 py-1 rounded hover:bg-gray-300 text-sm transition-colors";
-    tag.textContent = item;
-    tag.onclick = () => {
-      input.value = item;
-      fetchRecipes(item);
-    };
-    historyList.appendChild(tag);
-  });
+        const tag = document.createElement("button");
+        tag.className = "btn-expand bg-gray-200 px-2 py-1 rounded hover:bg-gray-300 text-sm transition-colors";
+        tag.textContent = item;
+        tag.onclick = () => {
+            input.value = item;
+            fetchRecipes(item);
+        };
+        historyList.appendChild(tag);
+    });
 }
 
 async function deleteFavorite(recipeId) {

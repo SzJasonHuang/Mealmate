@@ -131,3 +131,23 @@ html {
 .skip-link:focus {
     top: 0;
 }
+
+/* Button expansion animation */
+.btn-expand {
+    transform: scale(1);
+    transition: transform 0.2s ease-out;
+}
+
+.btn-expand:hover {
+    transform: scale(1.05);
+}
+
+/* Ensure buttons maintain their shape */
+.btn-expand:active {
+    transform: scale(0.98);
+}
+
+/* Disable expansion for disabled buttons */
+.btn-expand:disabled {
+    transform: scale(1);
+}
