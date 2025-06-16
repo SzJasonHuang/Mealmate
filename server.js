@@ -26,7 +26,7 @@ app.use(cors({
   origin: [
     'http://localhost:8080',
     'http://127.0.0.1:8080',
-    'https://szjasonhuang.github.io',
+    'https://szjasonhuang.github.io/Mealmate/',
     'http://localhost:3000',
     'http://127.0.0.1:3000'
   ],
