@@ -1,3 +1,5 @@
+import { ingredientsLibrary } from './ingredientsLibrary.js';
+
 const findButton = document.getElementById("findButton");
 const input = document.getElementById("ingredientInput");
 const results = document.getElementById("results");
@@ -41,6 +43,9 @@ let currentCount = 0;
 const INCREMENT = 10;
 const MAX_DISPLAYED = 50;
 
+// Add these constants at the top with your other constants
+const suggestionsList = document.getElementById('suggestionsList');
+
 // Initialize app
 window.onload = () => {
   console.log('App initializing...');
@@ -48,6 +53,7 @@ window.onload = () => {
   checkAuthStatus();
   loadHistory();
   testBackendConnection();
+  initializeDropdown();
 };
 
 // Test backend connection
@@ -502,6 +508,107 @@ async function deleteFavorite(recipeId) {
   } catch (error) {
     console.error('Error deleting favorite:', error);
   }
+}
+
+// Add these functions
+function initializeDropdown() {
+    input.addEventListener('input', handleInput);
+    input.addEventListener('focus', () => showSuggestions(input.value));
+    document.addEventListener('click', handleClickOutside);
+    input.addEventListener('keydown', handleKeyNavigation);
+}
+
+function handleInput(e) {
+    const value = e.target.value.toLowerCase();
+    showSuggestions(value);
+}
+
+function showSuggestions(value) {
+    const filtered = ingredientsLibrary.searchIngredients(value);
+
+    if (filtered.length === 0 || !value) {
+        suggestionsList.classList.remove('show');
+        return;
+    }
+
+    suggestionsList.innerHTML = filtered
+        .map(ingredient => `
+            <div class="suggestion-item" data-value="${ingredient}">
+                ${highlightMatch(ingredient, value)}
+            </div>
+        `)
+        .join('');
+
+    suggestionsList.classList.add('show');
+    
+    // Add click handlers to suggestions
+    document.querySelectorAll('.suggestion-item').forEach(item => {
+        item.addEventListener('click', () => {
+            input.value = item.dataset.value;
+            suggestionsList.classList.remove('show');
+            input.focus();
+        });
+    });
+}
+
+function highlightMatch(text, query) {
+    if (!query) return text;
+    const regex = new RegExp(`(${query})`, 'gi');
+    return text.replace(regex, '<strong>$1</strong>');
+}
+
+function handleClickOutside(e) {
+    if (!e.target.closest('.custom-dropdown')) {
+        suggestionsList.classList.remove('show');
+    }
+}
+
+function handleKeyNavigation(e) {
+    const items = document.querySelectorAll('.suggestion-item');
+    const selected = document.querySelector('.suggestion-item.selected');
+    let index = -1;
+
+    if (items.length === 0) return;
+
+    if (selected) {
+        index = Array.from(items).indexOf(selected);
+    }
+
+    switch (e.key) {
+        case 'ArrowDown':
+            e.preventDefault();
+            if (!suggestionsList.classList.contains('show')) {
+                showSuggestions(input.value);
+                return;
+            }
+            index = (index + 1) % items.length;
+            updateSelection(items, index);
+            break;
+
+        case 'ArrowUp':
+            e.preventDefault();
+            index = (index - 1 + items.length) % items.length;
+            updateSelection(items, index);
+            break;
+
+        case 'Enter':
+            if (selected) {
+                e.preventDefault();
+                input.value = selected.dataset.value;
+                suggestionsList.classList.remove('show');
+            }
+            break;
+
+        case 'Escape':
+            suggestionsList.classList.remove('show');
+            break;
+    }
+}
+
+function updateSelection(items, index) {
+    items.forEach(item => item.classList.remove('selected'));
+    items[index].classList.add('selected');
+    items[index].scrollIntoView({ block: 'nearest' });
 }
 
 // Event listeners

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MealMate</title>
-    <script defer src="script.js"></script>
+    <script type="module" src="script.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="style.css" rel="stylesheet">
@@ -90,18 +90,18 @@
   </div>
 
   <div class="w-full max-w-xl">
-    <input list="suggestions" id="ingredientInput" type="text" placeholder="e.g. egg, rice, tomato" 
-           class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none">
-    <datalist id="suggestions">
-      <option value="egg">
-      <option value="rice">
-      <option value="tomato">
-      <option value="cheese">
-      <option value="onion">
-      <option value="spinach">
-      <option value="chicken">
-      <option value="bread">
-    </datalist>
+    <div class="custom-dropdown">
+      <input 
+          type="text" 
+          id="ingredientInput" 
+          class="dropdown-input" 
+          placeholder="Enter ingredients..." 
+          autocomplete="off"
+      >
+      <div id="suggestionsList" class="suggestions-list">
+          <!-- Suggestions will be populated here -->
+      </div>
+    </div>
 
     <button id="findButton" 
             class="btn-expand mt-3 w-full bg-green-500 hover:bg-green-600 text-white p-3 rounded-md font-semibold btn-primary">
