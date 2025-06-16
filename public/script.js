@@ -84,6 +84,8 @@ function initializeButtons() {
         if (ingredients) {
             addToHistory(ingredients);
             fetchRecipes(ingredients);
+            input.value = ''; // Clear the input after search
+            suggestionsList.classList.remove('show'); // Hide suggestions
         }
     });
     
@@ -100,6 +102,8 @@ function initializeButtons() {
             if (ingredients) {
                 addToHistory(ingredients);
                 fetchRecipes(ingredients);
+                input.value = ''; // Clear the input after search
+                suggestionsList.classList.remove('show'); // Hide suggestions
             }
         }
     });
@@ -307,6 +311,8 @@ findButton.addEventListener("click", () => {
   searchError.classList.add('hidden');
   addToHistory(ingredients);
   fetchRecipes(ingredients);
+  input.value = ''; // Clear the input after search
+  suggestionsList.classList.remove('show'); // Hide suggestions
 });
 
 input.addEventListener("keydown", e => {
@@ -321,6 +327,8 @@ input.addEventListener("keydown", e => {
     searchError.classList.add('hidden');
     addToHistory(ingredients);
     fetchRecipes(ingredients);
+    input.value = ''; // Clear the input after search
+    suggestionsList.classList.remove('show'); // Hide suggestions
   }
 });
 
