@@ -46,15 +46,63 @@ const MAX_DISPLAYED = 50;
 // Add these constants at the top with your other constants
 const suggestionsList = document.getElementById('suggestionsList');
 
-// Initialize app
+// Initialize app with all event listeners
 window.onload = () => {
-  console.log('App initializing...');
-  console.log('API Base URL:', API_BASE_URL);
-  checkAuthStatus();
-  loadHistory();
-  testBackendConnection();
-  initializeDropdown();
+    console.log('App initializing...');
+    console.log('API Base URL:', API_BASE_URL);
+    
+    // Initialize UI elements
+    initializeButtons();
+    initializeDropdown();
+    
+    // Check auth and load data
+    checkAuthStatus();
+    loadHistory();
+    testBackendConnection();
 };
+
+// Initialize all button event listeners
+function initializeButtons() {
+    // Auth related buttons
+    loginBtn.addEventListener('click', () => showAuthModal(false));
+    registerBtn.addEventListener('click', () => showAuthModal(true));
+    logoutBtn.addEventListener('click', logout);
+    loginPromptBtn.addEventListener('click', () => showAuthModal(false));
+    closeModal.addEventListener('click', hideAuthModal);
+    toggleAuth.addEventListener('click', () => {
+        isRegistering = !isRegistering;
+        showAuthModal(isRegistering);
+    });
+    
+    // Form submission
+    authForm.addEventListener('submit', handleAuth);
+    
+    // Search related buttons
+    findButton.addEventListener('click', () => {
+        const ingredients = input.value.trim();
+        if (ingredients) {
+            addToHistory(ingredients);
+            fetchRecipes(ingredients);
+        }
+    });
+    
+    // History related buttons
+    clearHistory.addEventListener('click', () => {
+        localStorage.removeItem('searchHistory');
+        historyList.innerHTML = '';
+    });
+    
+    // Enter key functionality for search
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const ingredients = input.value.trim();
+            if (ingredients) {
+                addToHistory(ingredients);
+                fetchRecipes(ingredients);
+            }
+        }
+    });
+}
 
 // Test backend connection
 async function testBackendConnection() {
@@ -611,35 +659,18 @@ function updateSelection(items, index) {
     items[index].scrollIntoView({ block: 'nearest' });
 }
 
-// Event listeners
-loginBtn.addEventListener('click', () => showAuthModal(false));
-registerBtn.addEventListener('click', () => showAuthModal(true));
-loginPromptBtn.addEventListener('click', () => showAuthModal(false));
-logoutBtn.addEventListener('click', logout);
-closeModal.addEventListener('click', hideAuthModal);
-toggleAuth.addEventListener('click', () => showAuthModal(!isRegistering));
-authForm.addEventListener('submit', handleAuth);
-
-// Close modal on outside click
-authModal.addEventListener('click', (e) => {
-  if (e.target === authModal) {
-    hideAuthModal();
-  }
+// Close modal when clicking outside
+window.addEventListener('click', (e) => {
+    if (e.target === authModal) {
+        hideAuthModal();
+    }
 });
 
-// Event delegation for dynamic buttons
-results.addEventListener("click", (e) => {
-  if (e.target.classList.contains("add-fav-btn")) {
-    const recipeData = JSON.parse(e.target.getAttribute("data-recipe"));
-    saveFavorite(recipeData);
-  }
-});
-
-favorites.addEventListener("click", (e) => {
-  if (e.target.classList.contains("remove-fav-btn")) {
-    const recipeId = parseInt(e.target.getAttribute("data-id"));
-    deleteFavorite(recipeId);
-  }
+// Prevent form submission on enter in auth modal
+authForm.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+    }
 });
 
 // Infinite scroll
