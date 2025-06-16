@@ -1,3 +1,5 @@
+import { ingredientsLibrary } from './ingredientsLibrary.js';
+
 const findButton = document.getElementById("findButton");
 const input = document.getElementById("ingredientInput");
 const results = document.getElementById("results");
@@ -41,14 +43,71 @@ let currentCount = 0;
 const INCREMENT = 10;
 const MAX_DISPLAYED = 50;
 
-// Initialize app
+// Add these constants at the top with your other constants
+const suggestionsList = document.getElementById('suggestionsList');
+const searchError = document.getElementById('searchError');
+
+// Initialize app with all event listeners
 window.onload = () => {
-  console.log('App initializing...');
-  console.log('API Base URL:', API_BASE_URL);
-  checkAuthStatus();
-  loadHistory();
-  testBackendConnection();
+    console.log('App initializing...');
+    console.log('API Base URL:', API_BASE_URL);
+    
+    // Initialize UI elements
+    initializeButtons();
+    initializeDropdown();
+    
+    // Check auth and load data
+    checkAuthStatus();
+    loadHistory();
+    testBackendConnection();
 };
+
+// Initialize all button event listeners
+function initializeButtons() {
+    // Auth related buttons
+    loginBtn.addEventListener('click', () => showAuthModal(false));
+    registerBtn.addEventListener('click', () => showAuthModal(true));
+    logoutBtn.addEventListener('click', logout);
+    loginPromptBtn.addEventListener('click', () => showAuthModal(false));
+    closeModal.addEventListener('click', hideAuthModal);
+    toggleAuth.addEventListener('click', () => {
+        isRegistering = !isRegistering;
+        showAuthModal(isRegistering);
+    });
+    
+    // Form submission
+    authForm.addEventListener('submit', handleAuth);
+    
+    // Search related buttons
+    findButton.addEventListener('click', () => {
+        const ingredients = input.value.trim();
+        if (ingredients) {
+            addToHistory(ingredients);
+            fetchRecipes(ingredients);
+            input.value = ''; // Clear the input after search
+            suggestionsList.classList.remove('show'); // Hide suggestions
+        }
+    });
+    
+    // History related buttons
+    clearHistory.addEventListener('click', () => {
+        localStorage.removeItem('searchHistory');
+        historyList.innerHTML = '';
+    });
+    
+    // Enter key functionality for search
+    input.addEventListener("keypress", (e) => {
+        if (e.key === 'Enter') {
+            const ingredients = input.value.trim();
+            if (ingredients) {
+                addToHistory(ingredients);
+                fetchRecipes(ingredients);
+                input.value = ''; // Clear the input after search
+                suggestionsList.classList.remove('show'); // Hide suggestions
+            }
+        }
+    });
+}
 
 // Test backend connection
 async function testBackendConnection() {
@@ -244,15 +303,32 @@ async function migrateFavoritesToServer() {
 // Recipe functions
 findButton.addEventListener("click", () => {
   const ingredients = input.value.trim();
-  if (!ingredients) return alert("Please enter ingredients.");
+  if (!ingredients) {
+    searchError.textContent = "Please enter ingredients first";
+    searchError.classList.remove('hidden');
+    return;
+  }
+  searchError.classList.add('hidden');
   addToHistory(ingredients);
   fetchRecipes(ingredients);
+  input.value = ''; // Clear the input after search
+  suggestionsList.classList.remove('show'); // Hide suggestions
 });
 
 input.addEventListener("keydown", e => {
   if (e.key === "Enter") {
     e.preventDefault();
-    findButton.click();
+    const ingredients = input.value.trim();
+    if (!ingredients) {
+      searchError.textContent = "Please enter ingredients first";
+      searchError.classList.remove('hidden');
+      return;
+    }
+    searchError.classList.add('hidden');
+    addToHistory(ingredients);
+    fetchRecipes(ingredients);
+    input.value = ''; // Clear the input after search
+    suggestionsList.classList.remove('show'); // Hide suggestions
   }
 });
 
@@ -274,59 +350,78 @@ clearHistory.addEventListener("click", async () => {
   historyList.innerHTML = "";
 });
 
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    document.getElementById('toastContainer').appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+function showLoadingSpinner() {
+    document.getElementById('loadingSpinner').classList.remove('hidden');
+}
+
+function hideLoadingSpinner() {
+    document.getElementById('loadingSpinner').classList.add('hidden');
+}
+
 function fetchRecipes(ingredients, append = false) {
-  if (!append) {
-    currentQuery = ingredients;
-    currentCount = INCREMENT;
-    results.innerHTML = "<p class='text-gray-600 col-span-full'>Loading recipes...</p>";
-  } else {
-    currentCount += INCREMENT;
-  }
-
-  fetch(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${encodeURIComponent(ingredients)}&number=${MAX_DISPLAYED}&apiKey=${SPOONACULAR_API_KEY}`)
-    .then(res => {
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      return res.json();
-    })
-    .then(data => {
-      if (!append) {
+    if (!append) {
+        currentQuery = ingredients;
+        currentCount = INCREMENT;
         results.innerHTML = "";
-      }
-      if (data.length === 0) {
-        results.innerHTML = "<p class='text-red-500 col-span-full'>No recipes found. Try different ingredients!</p>";
-        return;
-      }
+        showLoadingSpinner();
+    }
 
-      const displayed = document.querySelectorAll("#results .bg-white").length;
-      data.slice(displayed).forEach(recipe => renderCard(recipe, results, true));
-    })
-    .catch(err => {
-      console.error('Recipe fetch error:', err);
-      results.innerHTML = "<p class='text-red-500 col-span-full'>Error fetching recipes. Please try again.</p>";
-    });
+    fetch(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${encodeURIComponent(ingredients)}&number=${MAX_DISPLAYED}&apiKey=${SPOONACULAR_API_KEY}`)
+        .then(res => {
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            return res.json();
+        })
+        .then(data => {
+            hideLoadingSpinner();
+            if (data.length === 0) {
+                searchError.textContent = "No recipes found with these ingredients";
+                searchError.classList.remove('hidden');
+                return;
+            }
+            searchError.classList.add('hidden');
+            const displayed = document.querySelectorAll("#results .recipe-card").length;
+            data.slice(displayed).forEach(recipe => renderCard(recipe, results, true));
+        })
+        .catch(err => {
+            hideLoadingSpinner();
+            searchError.textContent = "Error fetching recipes. Please try again later.";
+            searchError.classList.remove('hidden');
+            console.error('Recipe fetch error:', err);
+        });
 }
 
 function renderCard(recipe, container, showFavBtn = false) {
-  const card = document.createElement("div");
-  card.className = "bg-white rounded-lg shadow-md p-4 flex flex-col items-center text-center hover:shadow-lg transition-shadow";
+    const card = document.createElement("div");
+    card.className = "recipe-card bg-white rounded-lg shadow-md p-4 flex flex-col items-center text-center";
 
-  const favBtn = showFavBtn && currentUser
-    ? `<button class="mt-2 text-red-500 hover:text-red-700 text-sm add-fav-btn transition-colors" data-recipe='${JSON.stringify(recipe)}'>❤️ Add to Favorites</button>`
-    : showFavBtn
-    ? `<button class="mt-2 text-gray-400 text-sm cursor-not-allowed" disabled>❤️ Login to Save</button>`
-    : `<button class="mt-2 text-gray-500 hover:text-gray-700 text-sm remove-fav-btn transition-colors" data-id="${recipe.recipe_id || recipe.id}">🗑 Remove</button>`;
+    const favBtn = showFavBtn && currentUser
+      ? `<button class="btn-expand mt-2 text-red-500 hover:text-red-700 text-sm add-fav-btn transition-colors" data-recipe='${JSON.stringify(recipe)}'>❤️ Add to Favorites</button>`
+      : showFavBtn
+      ? `<button class="mt-2 text-gray-400 text-sm cursor-not-allowed" disabled>❤️ Login to Save</button>`
+      : `<button class="btn-expand mt-2 text-gray-500 hover:text-gray-700 text-sm remove-fav-btn transition-colors" data-id="${recipe.recipe_id || recipe.id}">🗑 Remove</button>`;
 
-  card.innerHTML = `
-    <img src="${recipe.image}" alt="${recipe.title || recipe.recipe_title}" class="w-full h-40 object-cover rounded mb-2" loading="lazy">
-    <h2 class="text-lg font-semibold mb-2">${recipe.title || recipe.recipe_title}</h2>
-    <a href="https://spoonacular.com/recipes/${(recipe.title || recipe.recipe_title).toLowerCase().replace(/ /g, "-")}-${recipe.id || recipe.recipe_id}" 
-       target="_blank" class="text-green-600 mt-2 underline hover:text-green-800 transition-colors">View Recipe</a>
-    ${favBtn}
-  `;
+    card.innerHTML = `
+      <img src="${recipe.image}" alt="${recipe.title || recipe.recipe_title}" class="w-full h-40 object-cover rounded mb-2" loading="lazy">
+      <h2 class="text-lg font-semibold mb-2">${recipe.title || recipe.recipe_title}</h2>
+      <a href="https://spoonacular.com/recipes/${(recipe.title || recipe.recipe_title).toLowerCase().replace(/ /g, "-")}-${recipe.id || recipe.recipe_id}" 
+         target="_blank" class="text-green-600 mt-2 underline hover:text-green-800 transition-colors">View Recipe</a>
+      ${favBtn}
+    `;
 
-  container.appendChild(card);
+    container.appendChild(card);
 }
 
 async function saveFavorite(recipe) {
@@ -453,15 +548,15 @@ async function loadHistory() {
   }
 
   history.slice(0, 10).forEach(item => {
-    const tag = document.createElement("button");
-    tag.className = "bg-gray-200 px-2 py-1 rounded hover:bg-gray-300 text-sm transition-colors";
-    tag.textContent = item;
-    tag.onclick = () => {
-      input.value = item;
-      fetchRecipes(item);
-    };
-    historyList.appendChild(tag);
-  });
+        const tag = document.createElement("button");
+        tag.className = "btn-expand bg-gray-200 px-2 py-1 rounded hover:bg-gray-300 text-sm transition-colors";
+        tag.textContent = item;
+        tag.onclick = () => {
+            input.value = item;
+            fetchRecipes(item);
+        };
+        historyList.appendChild(tag);
+    });
 }
 
 async function deleteFavorite(recipeId) {
@@ -487,35 +582,119 @@ async function deleteFavorite(recipeId) {
   }
 }
 
-// Event listeners
-loginBtn.addEventListener('click', () => showAuthModal(false));
-registerBtn.addEventListener('click', () => showAuthModal(true));
-loginPromptBtn.addEventListener('click', () => showAuthModal(false));
-logoutBtn.addEventListener('click', logout);
-closeModal.addEventListener('click', hideAuthModal);
-toggleAuth.addEventListener('click', () => showAuthModal(!isRegistering));
-authForm.addEventListener('submit', handleAuth);
+// Add these functions
+function initializeDropdown() {
+    input.addEventListener('input', handleInput);
+    input.addEventListener('focus', () => showSuggestions(input.value));
+    document.addEventListener('click', handleClickOutside);
+    input.addEventListener('keydown', handleKeyNavigation);
+}
 
-// Close modal on outside click
-authModal.addEventListener('click', (e) => {
-  if (e.target === authModal) {
-    hideAuthModal();
-  }
+function handleInput(e) {
+    const value = e.target.value.toLowerCase();
+    showSuggestions(value);
+}
+
+function showSuggestions(value) {
+    const filtered = ingredientsLibrary.searchIngredients(value);
+
+    if (filtered.length === 0 || !value) {
+        suggestionsList.classList.remove('show');
+        return;
+    }
+
+    suggestionsList.innerHTML = filtered
+        .map(ingredient => `
+            <div class="suggestion-item" data-value="${ingredient}">
+                ${highlightMatch(ingredient, value)}
+            </div>
+        `)
+        .join('');
+
+    suggestionsList.classList.add('show');
+    
+    // Add click handlers to suggestions
+    document.querySelectorAll('.suggestion-item').forEach(item => {
+        item.addEventListener('click', () => {
+            input.value = item.dataset.value;
+            suggestionsList.classList.remove('show');
+            input.focus();
+        });
+    });
+}
+
+function highlightMatch(text, query) {
+    if (!query) return text;
+    const regex = new RegExp(`(${query})`, 'gi');
+    return text.replace(regex, '<strong>$1</strong>');
+}
+
+function handleClickOutside(e) {
+    if (!e.target.closest('.custom-dropdown')) {
+        suggestionsList.classList.remove('show');
+    }
+}
+
+function handleKeyNavigation(e) {
+    const items = document.querySelectorAll('.suggestion-item');
+    const selected = document.querySelector('.suggestion-item.selected');
+    let index = -1;
+
+    if (items.length === 0) return;
+
+    if (selected) {
+        index = Array.from(items).indexOf(selected);
+    }
+
+    switch (e.key) {
+        case 'ArrowDown':
+            e.preventDefault();
+            if (!suggestionsList.classList.contains('show')) {
+                showSuggestions(input.value);
+                return;
+            }
+            index = (index + 1) % items.length;
+            updateSelection(items, index);
+            break;
+
+        case 'ArrowUp':
+            e.preventDefault();
+            index = (index - 1 + items.length) % items.length;
+            updateSelection(items, index);
+            break;
+
+        case 'Enter':
+            if (selected) {
+                e.preventDefault();
+                input.value = selected.dataset.value;
+                suggestionsList.classList.remove('show');
+            }
+            break;
+
+        case 'Escape':
+            suggestionsList.classList.remove('show');
+            break;
+    }
+}
+
+function updateSelection(items, index) {
+    items.forEach(item => item.classList.remove('selected'));
+    items[index].classList.add('selected');
+    items[index].scrollIntoView({ block: 'nearest' });
+}
+
+// Close modal when clicking outside
+window.addEventListener('click', (e) => {
+    if (e.target === authModal) {
+        hideAuthModal();
+    }
 });
 
-// Event delegation for dynamic buttons
-results.addEventListener("click", (e) => {
-  if (e.target.classList.contains("add-fav-btn")) {
-    const recipeData = JSON.parse(e.target.getAttribute("data-recipe"));
-    saveFavorite(recipeData);
-  }
-});
-
-favorites.addEventListener("click", (e) => {
-  if (e.target.classList.contains("remove-fav-btn")) {
-    const recipeId = parseInt(e.target.getAttribute("data-id"));
-    deleteFavorite(recipeId);
-  }
+// Prevent form submission on enter in auth modal
+authForm.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+    }
 });
 
 // Infinite scroll
