@@ -397,7 +397,7 @@ function fetchRecipes(ingredients, append = false) {
         })
         .catch(err => {
             hideLoadingSpinner();
-            searchError.textContent = "Error fetching recipes. Please try again.";
+            searchError.textContent = "Error fetching recipes. Please try again later.";
             searchError.classList.remove('hidden');
             console.error('Recipe fetch error:', err);
         });
