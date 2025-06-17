@@ -713,3 +713,26 @@ document.addEventListener('keydown', (e) => {
     hideAuthModal();
   }
 });
+
+// Global click handler for Add/Remove Favorite buttons
+document.addEventListener('click', (e) => {
+    // Check for "Add to Favorites" button
+    const addBtn = e.target.closest('.add-fav-btn');
+    if (addBtn) {
+      try {
+        const recipeData = JSON.parse(addBtn.dataset.recipe);
+        saveFavorite(recipeData);
+      } catch (err) {
+        console.error('Failed to parse recipe data from add button:', err);
+      }
+      return;
+    }
+  
+    // Check for "Remove from Favorites" button
+    const removeBtn = e.target.closest('.remove-fav-btn');
+    if (removeBtn) {
+      const recipeId = removeBtn.dataset.id;
+      deleteFavorite(recipeId);
+    }
+  });
+  
