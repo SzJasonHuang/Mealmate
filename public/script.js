@@ -32,7 +32,7 @@ const API_BASE_URL = window.location.hostname === 'localhost' || window.location
   ? 'http://localhost:3000/api' 
   : '/api'; // Replace with your actual backend URL when deployed
 
-const SPOONACULAR_API_KEY = "f862488724a4402887ae62651640d9d0"; 
+const SPOONACULAR_API_KEY = "6c2b54517ee8420eb92d6cdaff79153b"; 
 
 // State management
 let currentUser = null;
