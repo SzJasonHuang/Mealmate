@@ -28,6 +28,7 @@
 /* Card hover effects */
 .recipe-card {
     transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+    background-color: (90deg, #2cf540 25%, #e0e0e0 50%, #f0f0f0 75%);
 }
 
 .recipe-card:hover {
@@ -47,7 +48,7 @@
 }
 
 .skeleton {
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background: linear-gradient(90deg, #a8f35d 25%, #c5e55e 50%, #9bf5bc 75%);
     background-size: 1000px 100%;
     animation: shimmer 2s infinite linear;
 }
@@ -133,6 +134,8 @@ html {
     color: white;
     transition: top 0.2s;
 }
+
+
 
 .skip-link:focus {
     top: 0;
@@ -246,4 +249,15 @@ input::-webkit-calendar-picker-indicator {
 /* Error message animation */
 #searchError {
     animation: slideIn 0.2s ease-out;
+}
+
+.userSection{
+    background-color: #689f38;
+    background-image: repeating-linear-gradient(
+      -25deg,
+      transparent,
+      transparent 40px,
+      #aed581 40px,
+      #aed581 50px
+    );
 }
